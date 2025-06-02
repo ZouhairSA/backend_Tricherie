@@ -4,11 +4,18 @@ from models import db, Camera, Alert
 import os
 import requests
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/exam_eye_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static'
+
+logger.info(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Create directories if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -17,7 +24,21 @@ db.init_app(app)
 
 # Initialize database
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {str(e)}")
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    try:
+        # Test database connection
+        db.engine.execute('SELECT 1')
+        return jsonify({"status": "healthy", "database": "connected"}), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return jsonify({"status": "unhealthy", "database": "disconnected"}), 500
 
 YOLO_API_URL = "https://api-tricherie-hestim.onrender.com/predict"
 
