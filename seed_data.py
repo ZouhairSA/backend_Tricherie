@@ -1,13 +1,12 @@
 from app import app, db
 from models import Camera
 
-def init_db():
+def seed_data():
     with app.app_context():
-        # Supprime toutes les tables existantes
-        db.drop_all()
-        # Crée toutes les tables
-        db.create_all()
-        # Ajoute les caméras réelles
+        # Clear existing data
+        Camera.query.delete()
+        
+        # Add sample cameras
         cameras = [
             Camera(
                 name="CAM-001",
@@ -34,9 +33,12 @@ def init_db():
                 room_number="Salle B1"
             )
         ]
+        
+        # Add cameras to database
         db.session.add_all(cameras)
         db.session.commit()
-        print("Base de données initialisée avec succès!")
+        
+        print("Database seeded successfully!")
 
 if __name__ == "__main__":
-    init_db()
+    seed_data()

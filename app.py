@@ -58,14 +58,29 @@ YOLO_API_URL = "https://api-tricherie-hestim.onrender.com/predict"
 
 @app.route('/api/cameras', methods=['GET'])
 def get_cameras():
-    cameras = Camera.query.all()
-    return jsonify([{
-        'id': camera.id,
-        'name': camera.name,
-        'ip_address': camera.ip_address,
-        'code': camera.code,
-        'room_number': camera.room_number
-    } for camera in cameras])
+    try:
+        cameras = Camera.query.all()
+        if not cameras:
+            return jsonify({
+                'message': 'No cameras found',
+                'cameras': []
+            })
+        return jsonify({
+            'message': 'Cameras retrieved successfully',
+            'cameras': [{
+                'id': camera.id,
+                'name': camera.name,
+                'ip_address': camera.ip_address,
+                'code': camera.code,
+                'room_number': camera.room_number
+            } for camera in cameras]
+        })
+    except Exception as e:
+        logger.error(f"Error fetching cameras: {str(e)}")
+        return jsonify({
+            'error': 'Failed to fetch cameras',
+            'message': str(e)
+        }), 500
 
 @app.route('/api/cameras', methods=['POST'])
 def add_camera():
@@ -84,30 +99,57 @@ def add_camera():
     db.session.commit()
     
     return jsonify({
-        'id': camera.id,
-        'name': camera.name,
-        'ip_address': camera.ip_address,
-        'code': camera.code,
-        'room_number': camera.room_number
+        'message': 'Camera added successfully',
+        'camera': {
+            'id': camera.id,
+            'name': camera.name,
+            'ip_address': camera.ip_address,
+            'code': camera.code,
+            'room_number': camera.room_number
+        }
     }), 201
 
 @app.route('/api/cameras/<int:camera_id>', methods=['DELETE'])
 def delete_camera(camera_id):
-    camera = Camera.query.get_or_404(camera_id)
-    db.session.delete(camera)
-    db.session.commit()
-    return '', 204
+    try:
+        camera = Camera.query.get_or_404(camera_id)
+        db.session.delete(camera)
+        db.session.commit()
+        return jsonify({
+            'message': 'Camera deleted successfully'
+        }), 200
+    except Exception as e:
+        logger.error(f"Error deleting camera: {str(e)}")
+        return jsonify({
+            'error': 'Failed to delete camera',
+            'message': str(e)
+        }), 500
 
 @app.route('/api/alerts', methods=['GET'])
 def get_alerts():
-    alerts = Alert.query.all()
-    return jsonify([{
-        'id': alert.id,
-        'camera_id': alert.camera_id,
-        'timestamp': alert.timestamp.isoformat(),
-        'image_path': alert.image_path,
-        'detected_object': alert.detected_object
-    } for alert in alerts])
+    try:
+        alerts = Alert.query.all()
+        if not alerts:
+            return jsonify({
+                'message': 'No alerts found',
+                'alerts': []
+            })
+        return jsonify({
+            'message': 'Alerts retrieved successfully',
+            'alerts': [{
+                'id': alert.id,
+                'camera_id': alert.camera_id,
+                'timestamp': alert.timestamp.isoformat(),
+                'image_path': alert.image_path,
+                'detected_object': alert.detected_object
+            } for alert in alerts]
+        })
+    except Exception as e:
+        logger.error(f"Error fetching alerts: {str(e)}")
+        return jsonify({
+            'error': 'Failed to fetch alerts',
+            'message': str(e)
+        }), 500
 
 @app.route('/api/alerts', methods=['POST'])
 def create_alert():
