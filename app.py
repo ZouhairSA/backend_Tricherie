@@ -49,10 +49,54 @@ def health_check():
         with engine.connect() as connection:
             result = connection.execute(text('SELECT 1')).fetchone()
             logger.info(f"Health check successful: {result}")
-        return jsonify({"status": "healthy", "database": "connected"}), 200
+        return jsonify({
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.utcnow().isoformat()
+        }), 200
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
-        return jsonify({"status": "unhealthy", "database": "disconnected"}), 500
+        return jsonify({
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }), 500
+
+@app.route('/api/test', methods=['GET'])
+def test_endpoint():
+    """Route de test pour vérifier la connexion"""
+    try:
+        # Test database connection
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        with engine.connect() as connection:
+            result = connection.execute(text('SELECT 1')).fetchone()
+            logger.info(f"Test endpoint successful: {result}")
+        
+        # Test YOLO API connection
+        try:
+            response = requests.get(YOLO_API_URL)
+            yolo_status = response.status_code
+            yolo_message = response.text
+        except Exception as e:
+            yolo_status = "unreachable"
+            yolo_message = str(e)
+
+        return jsonify({
+            "status": "success",
+            "database": "connected",
+            "yolo_api": {
+                "status": yolo_status,
+                "message": yolo_message
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        logger.error(f"Test endpoint failed: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 500
 
 YOLO_API_URL = "https://api-tricherie-hestim.onrender.com/predict"
 

@@ -11,11 +11,32 @@ logger = logging.getLogger(__name__)
 
 # Configuration spécifique pour Render
 try:
-    DATABASE_URL = os.getenv('DATABASE_URL')
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable is not set")
+    # Get required environment variables
+    required_vars = {
+        'DATABASE_URL': 'Database connection string',
+        'FLASK_APP': 'Flask application file',
+        'FLASK_ENV': 'Flask environment',
+        'API_URL': 'YOLO API endpoint'
+    }
     
+    # Validate all required variables
+    for var_name, description in required_vars.items():
+        value = os.getenv(var_name)
+        if not value:
+            raise ValueError(f"Required environment variable {var_name} is not set")
+        logger.info(f"Using {description}: {value}")
+    
+    # Set database URL
+    DATABASE_URL = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+    
+    # Set other required configurations
+    app.config['FLASK_APP'] = os.getenv('FLASK_APP', 'app.py')
+    app.config['FLASK_ENV'] = os.getenv('FLASK_ENV', 'production')
+    
+    # Set YOLO API URL
+    global YOLO_API_URL
+    YOLO_API_URL = os.getenv('API_URL', 'https://api-tricherie-hestim.onrender.com/predict')
     
     # Test de connexion à la base de données
     try:
