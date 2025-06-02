@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "https://hestim-dtricheries8.onrender.com"}})
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/exam_eye_db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/exam_eye_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static'
 
@@ -23,7 +23,7 @@ app.config['UPLOAD_FOLDER'] = 'static'
 try:
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     with engine.connect() as connection:
-        result = connection.execute("SELECT 1").fetchone()
+        result = connection.execute(text("SELECT 1")).fetchone()
         logger.info(f"Database connection test successful: {result}")
 except Exception as e:
     logger.error(f"Database connection test failed: {str(e)}")
