@@ -2,7 +2,6 @@ from app import app, db
 from models import Camera
 import os
 import sys
-import gunicorn
 
 # Configuration spécifique pour Render
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -47,8 +46,3 @@ with app.app_context():
     db.session.add_all(cameras)
     db.session.commit()
     print("Base de données initialisée avec succès!")
-
-# Démarrer l'application avec Gunicorn
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    gunicorn.run(app, host='0.0.0.0', port=port)
