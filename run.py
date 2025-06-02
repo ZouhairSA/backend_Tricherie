@@ -18,7 +18,26 @@ try:
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     
     # Test de connexion à la base de données
-    with app.app_context():
+    try:
+        with app.app_context():
+            db.engine.connect()
+            logger.info("Database connection successful")
+            
+            # Test if tables exist
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            logger.info(f"Database tables: {tables}")
+            
+            # Check if we need to initialize the database
+            if not tables:
+                logger.info("Database needs initialization")
+                db.create_all()
+                logger.info("Database initialized successfully")
+            else:
+                logger.info("Database already initialized, skipping initialization")
+    except Exception as e:
+        logger.error(f"Database connection failed: {str(e)}")
+        sys.exit(1)
         try:
             db.engine.connect()
             logger.info("Database connection successful")
