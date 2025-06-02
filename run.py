@@ -24,6 +24,15 @@ try:
         value = os.getenv(var_name)
         if not value:
             raise ValueError(f"Required environment variable {var_name} is not set")
+        
+        # Validate specific values
+        if var_name == 'DATABASE_URL' and not value.startswith('postgresql://'):
+            raise ValueError(f"Invalid DATABASE_URL format: {value}")
+        elif var_name == 'FLASK_APP' and not os.path.exists(value):
+            raise ValueError(f"FLASK_APP file not found: {value}")
+        elif var_name == 'FLASK_ENV' and value not in ['production', 'development']:
+            raise ValueError(f"Invalid FLASK_ENV value: {value}")
+        
         logger.info(f"Using {description}: {value}")
     
     # Set database URL
