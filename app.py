@@ -22,10 +22,9 @@ app.config['UPLOAD_FOLDER'] = 'static'
 # Test database connection directly
 try:
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    result = session.execute('SELECT 1').fetchone()
-    logger.info(f"Database connection test successful: {result}")
+    with engine.connect() as connection:
+        result = connection.execute('SELECT 1').fetchone()
+        logger.info(f"Database connection test successful: {result}")
 except Exception as e:
     logger.error(f"Database connection test failed: {str(e)}")
 
