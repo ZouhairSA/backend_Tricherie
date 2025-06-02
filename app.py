@@ -1,20 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from models import db, Camera, Alert
 import os
 import requests
 from datetime import datetime
 import logging
-from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
-import psycopg2
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "https://hestim-dtricheries8.onrender.com"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/exam_eye_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static'
@@ -24,7 +24,7 @@ try:
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     with engine.connect() as connection:
         result = connection.execute("SELECT 1").fetchone()
-        logger.info(f"Database connectiosn test successful: {result}")
+        logger.info(f"Database connection test successful: {result}")
 except Exception as e:
     logger.error(f"Database connection test failed: {str(e)}")
 
