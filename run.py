@@ -11,9 +11,12 @@ if not DATABASE_URL:
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
+from sqlalchemy import inspect
+
 with app.app_context():
     # Vérifie si les tables existent déjà
-    if not db.engine.dialect.has_table(db.engine, 'camera'):
+    inspector = inspect(db.engine)
+    if not inspector.has_table('camera'):
         print("INFO:app:Initializing database for the first time...")
         # Supprime toutes les tables existantes
         db.drop_all()
