@@ -25,9 +25,24 @@ with app.app_context():
         
         # Insertion des données initiales
         cameras = [
-            Camera(name="Camera 1", location="Salle A"),
-            Camera(name="Camera 2", location="Salle B"),
-            Camera(name="Camera 3", location="Salle C")
+            Camera(
+                name="Camera 1",
+                ip_address="192.168.1.1",
+                code="CAM001",
+                room_number="Salle A"
+            ),
+            Camera(
+                name="Camera 2",
+                ip_address="192.168.1.2",
+                code="CAM002",
+                room_number="Salle B"
+            ),
+            Camera(
+                name="Camera 3",
+                ip_address="192.168.1.3",
+                code="CAM003",
+                room_number="Salle C"
+            )
         ]
         db.session.add_all(cameras)
         db.session.commit()
