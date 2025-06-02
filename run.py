@@ -16,7 +16,7 @@ from sqlalchemy import inspect
 with app.app_context():
     # Vérifie si les tables existent déjà
     inspector = inspect(db.engine)
-    if not inspector.has_table('camera'):
+    if not inspector.has_table('cameras'):
         print("INFO:app:Initializing database for the first time...")
         # Supprime toutes les tables existantes
         db.drop_all()
