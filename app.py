@@ -200,5 +200,37 @@ def create_alert():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    try:
+        port = int(os.environ.get("PORT", 5000))
+        if os.environ.get("ENV") == "development":
+            app.run(host="0.0.0.0", port=port, debug=True)
+        else:
+            from gunicorn.app.base import BaseApplication
+            
+            class StandaloneApplication(BaseApplication):
+                def __init__(self, app, options=None):
+                    self.options = options or {}
+                    self.application = app
+                    super().__init__()
+                
+                def load_config(self):
+                    config = {key: value for key, value in self.options.items()
+                             if key in self.cfg.settings and value is not None}
+                    for key, value in config.items():
+                        self.cfg.set(key.lower(), value)
+                
+                def load(self):
+                    return self.application
+            
+            options = {
+                'bind': f'0.0.0.0:{port}',
+                'workers': 2,
+                'timeout': 120,
+                'accesslog': '-',
+                'errorlog': '-',
+                'loglevel': 'info'
+            }
+            StandaloneApplication(app, options).run()
+    except Exception as e:
+        logger.error(f"Error starting application: {str(e)}")
+        sys.exit(1)
