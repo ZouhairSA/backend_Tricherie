@@ -5,6 +5,10 @@ import os
 import requests
 from datetime import datetime
 import logging
+from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
+import psycopg2
+from sqlalchemy import create_engine
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +19,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static'
 
-logger.info(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+# Test database connection directly
+try:
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    connection = engine.connect()
+    result = connection.execute('SELECT 1').fetchone()
+    logger.info(f"Database connection test successful: {result}")
+    connection.close()
+except Exception as e:
+    logger.error(f"Database connection test failed: {str(e)}")
 
 # Create directories if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -34,7 +46,11 @@ with app.app_context():
 def health_check():
     try:
         # Test database connection
-        db.engine.execute('SELECT 1')
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        connection = engine.connect()
+        result = connection.execute('SELECT 1').fetchone()
+        logger.info(f"Health check successful: {result}")
+        connection.close()
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
