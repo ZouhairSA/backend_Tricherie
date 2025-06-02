@@ -22,10 +22,9 @@ app.config['UPLOAD_FOLDER'] = 'static'
 # Test database connection directly
 try:
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    connection = engine.connect()
-    result = connection.execute('SELECT 1').fetchone()
-    logger.info(f"Database connection test successful: {result}")
-    connection.close()
+    with engine.connect() as connection:
+        result = connection.execute(text('SELECT 1')).fetchone()
+        logger.info(f"Database connection test successful: {result}")
 except Exception as e:
     logger.error(f"Database connection test failed: {str(e)}")
 
@@ -47,10 +46,9 @@ def health_check():
     try:
         # Test database connection
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-        connection = engine.connect()
-        result = connection.execute('SELECT 1').fetchone()
-        logger.info(f"Health check successful: {result}")
-        connection.close()
+        with engine.connect() as connection:
+            result = connection.execute(text('SELECT 1')).fetchone()
+            logger.info(f"Health check successful: {result}")
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
